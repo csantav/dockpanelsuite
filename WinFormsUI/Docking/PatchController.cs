@@ -957,5 +957,83 @@ namespace WeifenLuo.WinFormsUI.Docking
                 _selectClosestOnClose = value;
             }
         }
+
+        private static bool? _tabReordering;
+
+        public static bool? EnableTabReordering
+        {
+            get
+            {
+                if (_tabReordering != null)
+                {
+                    return _tabReordering;
+                }
+
+                if (EnableAll != null)
+                {
+                    return _tabReordering = EnableAll;
+                }
+
+                var section = ConfigurationManager.GetSection("dockPanelSuite") as PatchSection;
+                if (section != null)
+                {
+                    if (section.EnableAll != null)
+                    {
+                        return _tabReordering = section.EnableAll;
+                    }
+
+                    return _tabReordering = section.EnableTabReordering;
+                }
+
+                var environment = Environment.GetEnvironmentVariable("DPS_EnableTabReordering");
+                if (!string.IsNullOrEmpty(environment))
+                {
+                    var enable = false;
+                    if (bool.TryParse(environment, out enable))
+                    {
+                        return _tabReordering = enable;
+                    }
+                }
+
+                {
+                    var key = Registry.CurrentUser.OpenSubKey(@"Software\DockPanelSuite");
+                    if (key != null)
+                    {
+                        var pair = key.GetValue("EnableTabReordering");
+                        if (pair != null)
+                        {
+                            var enable = false;
+                            if (bool.TryParse(pair.ToString(), out enable))
+                            {
+                                return _tabReordering = enable;
+                            }
+                        }
+                    }
+                }
+
+                {
+                    var key = Registry.LocalMachine.OpenSubKey(@"Software\DockPanelSuite");
+                    if (key != null)
+                    {
+                        var pair = key.GetValue("EnableTabReordering");
+                        if (pair != null)
+                        {
+                            var enable = false;
+                            if (bool.TryParse(pair.ToString(), out enable))
+                            {
+                                return _tabReordering = enable;
+                            }
+                        }
+                    }
+                }
+
+                return _tabReordering = true;
+            }
+
+            set
+            {
+                _tabReordering = value;
+            }
+        }
     }
 }

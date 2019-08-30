@@ -1174,6 +1174,19 @@ namespace WeifenLuo.WinFormsUI.Docking
             DockPane pane = DockPanel.Theme.Extender.DockPaneFactory.CreateDockPane(Content, floatWindowBounds, true);
         }
 
+        private void AddInvisibleContentsToIndex(ref int nIndex, DockPane pane)
+        {
+            var contents = pane.Contents;
+            for (int i = 0; i <= nIndex && i < contents.Count; i++)
+            {
+                IDockContent dockContent = contents[i];
+                if (!pane.DisplayingContents.Contains(dockContent))
+                {
+                    nIndex++;
+                }
+            }
+        }
+
         public void DockTo(DockPane pane, DockStyle dockStyle, int contentIndex)
         {
             if (dockStyle == DockStyle.Fill)
@@ -1196,12 +1209,24 @@ namespace WeifenLuo.WinFormsUI.Docking
                 contentIndex = Math.Min(Math.Max(0, convertedIndex - 1), Pane.Contents.Count - 1);
 
                 if (contentIndex == -1 || !samePane)
-                    pane.SetContentIndex(Content, contentIndex);
+                {
+                    if (PatchController.EnableTabReordering == true)
+                    {
+                        AddInvisibleContentsToIndex(ref contentIndex, pane);
+                        pane.SetContentIndex(Content, contentIndex, samePane);
+                    }
+                    else
+                    {
+                        pane.SetContentIndex(Content, contentIndex);
+                    }
+                }
                 else
                 {
                     DockContentCollection contents = pane.Contents;
                     int oldIndex = contents.IndexOf(Content);
                     int newIndex = contentIndex;
+                    if (PatchController.EnableTabReordering == true)
+                        AddInvisibleContentsToIndex(ref newIndex, pane);
                     if (oldIndex < newIndex)
                     {
                         newIndex += 1;

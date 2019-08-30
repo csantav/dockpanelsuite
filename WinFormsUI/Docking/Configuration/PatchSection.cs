@@ -81,5 +81,11 @@ namespace WeifenLuo.WinFormsUI.Docking.Configuration
         {
             get { return (bool)base["enableSelectClosestOnClose"]; }
         }
+
+        [ConfigurationProperty("enableTabReordering", DefaultValue = true)]
+        public bool EnableTabReordering
+        {
+            get { return (bool)base["enableTabReordering"]; }
+        }
     }
 }

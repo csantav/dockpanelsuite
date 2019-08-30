@@ -644,6 +644,11 @@ namespace WeifenLuo.WinFormsUI.Docking
 
         public void SetContentIndex(IDockContent content, int index)
         {
+            SetContentIndex(content, index, true);
+        }
+
+        public void SetContentIndex(IDockContent content, int index, bool samePane)
+        {
             int oldIndex = Contents.IndexOf(content);
             if (oldIndex == -1)
                 throw (new ArgumentException(Strings.DockPane_SetContentIndex_InvalidContent));
@@ -658,12 +663,24 @@ namespace WeifenLuo.WinFormsUI.Docking
                 return;
 
             Contents.Remove(content);
-            if (index == -1)
-                Contents.Add(content);
-            else if (oldIndex < index)
-                Contents.AddAt(content, index - 1);
+            if (PatchController.EnableTabReordering == true)
+            {
+                if (index == -1)
+                    Contents.Add(content);
+                else if (oldIndex < index && samePane)
+                    Contents.AddAt(content, index - 1);
+                else
+                    Contents.AddAt(content, index);
+            }
             else
-                Contents.AddAt(content, index);
+            {
+                if (index == -1)
+                    Contents.Add(content);
+                else if (oldIndex < index)
+                    Contents.AddAt(content, index - 1);
+                else
+                    Contents.AddAt(content, index);
+            }
 
             RefreshChanges();
         }
@@ -1338,7 +1355,7 @@ namespace WeifenLuo.WinFormsUI.Docking
         #endregion
 
         #region cachedLayoutArgs leak workaround
-        
+
         /// <summary>
         /// There's a bug in the WinForms layout engine
         /// that can result in a deferred layout to not
